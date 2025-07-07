@@ -82,7 +82,19 @@ export default function Home() {
     }
   }, [])
 
-  // All candidates (no filtering by position)
+  // Group candidates by position/office
+  const groupedCandidates = candidates.reduce((groups, candidate) => {
+    const position = candidate.party || 'Other'
+    if (!groups[position]) {
+      groups[position] = []
+    }
+    groups[position].push(candidate)
+    return groups
+  }, {} as Record<string, Candidate[]>)
+
+  // Define position order: BOD first, then Audit Committee, then Election Committee
+  const positionOrder = ['Board of Director (BOD)', 'Audit Committee', 'Election Committee']
+  const positions = positionOrder.filter(position => groupedCandidates[position])
 
   if (loading) {
     return (
@@ -102,7 +114,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Philippine Election Results 2025</h1>
+              <h1 className="text-3xl font-bold text-gray-900">30th HICEMPO General Assembly</h1>
               <p className="text-gray-600 mt-1">Real-time Vote Tallying System</p>
             </div>
             <div className="text-right">
@@ -141,12 +153,33 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Candidates Results */}
-          <VoteSection
-            title="Candidates"
-            candidates={candidates}
-          />
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Summary Section */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Election Overview</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {positions.map(position => {
+                const positionCandidates = groupedCandidates[position]
+                const totalVotes = positionCandidates.reduce((sum, candidate) => sum + candidate.votes, 0)
+                return (
+                  <div key={position} className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-lg text-gray-800">{position}</h3>
+                    <p className="text-gray-600">{positionCandidates.length} candidates</p>
+                    <p className="text-blue-600 font-medium">{totalVotes.toLocaleString()} total votes</p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Position Results */}
+          {positions.map(position => (
+            <VoteSection
+              key={position}
+              title={position}
+              candidates={groupedCandidates[position]}
+            />
+          ))}
         </div>
       </main>
 
@@ -154,7 +187,7 @@ export default function Home() {
       <footer className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="text-center text-gray-600">
-            <p>Vote Tallying System - MVP</p>
+            <p>Vote Tallying System</p>
             <p className="text-sm mt-1">
               Manual vote entry system for election results tracking
             </p>

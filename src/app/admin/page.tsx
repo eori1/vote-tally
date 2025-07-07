@@ -7,6 +7,9 @@ import { Plus, Minus, RefreshCw, ArrowLeft, UserPlus, Trash2, X } from 'lucide-r
 import Link from 'next/link'
 
 export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' })
+  const [loginError, setLoginError] = useState('')
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<number | null>(null)
@@ -18,6 +21,8 @@ export default function AdminPage() {
     party: '',
     description: ''
   })
+
+  const positions = ['Board of Director (BOD)', 'Audit Committee', 'Election Committee']
   const [addingCandidate, setAddingCandidate] = useState(false)
   const [removingCandidate, setRemovingCandidate] = useState<number | null>(null)
 
@@ -181,6 +186,11 @@ export default function AdminPage() {
       alert('Please enter a candidate name')
       return
     }
+    
+    if (!newCandidate.party) {
+      alert('Please select a position')
+      return
+    }
 
     setAddingCandidate(true)
     try {
@@ -266,7 +276,108 @@ export default function AdminPage() {
     }
   }
 
-  // All candidates (no filtering by position)
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginError('')
+    
+    if (loginForm.username === 'admin' && loginForm.password === 'admin6108') {
+      setIsAuthenticated(true)
+      setLoginForm({ username: '', password: '' })
+    } else {
+      setLoginError('Invalid username or password')
+    }
+  }
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    setLoginForm({ username: '', password: '' })
+    setLoginError('')
+  }
+
+  // Group candidates by position for admin panel
+  const groupedCandidates = candidates.reduce((groups, candidate) => {
+    const position = candidate.party || 'Other'
+    if (!groups[position]) {
+      groups[position] = []
+    }
+    groups[position].push(candidate)
+    return groups
+  }, {} as Record<string, Candidate[]>)
+
+  // Sort candidates within each position alphabetically by name for stable admin interface
+  Object.keys(groupedCandidates).forEach(position => {
+    groupedCandidates[position].sort((a, b) => a.name.localeCompare(b.name))
+  })
+
+  // Define position order: BOD first, then Audit Committee, then Election Committee
+  const positionOrder = ['Board of Director (BOD)', 'Audit Committee', 'Election Committee']
+  const adminPositions = positionOrder.filter(position => groupedCandidates[position])
+
+  // Show login form if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
+            <p className="text-gray-600 mt-2">Enter your credentials to access the admin panel</p>
+          </div>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Username
+              </label>
+              <input
+                type="text"
+                value={loginForm.username}
+                onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                placeholder="Enter username"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            
+            {loginError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {loginError}
+              </div>
+            )}
+            
+            <button
+              type="submit"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            >
+              Login
+            </button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <Link 
+              href="/"
+              className="text-red-600 hover:text-red-700 text-sm font-medium"
+            >
+              ← Back to Results
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -298,13 +409,22 @@ export default function AdminPage() {
                 <p className="text-red-100 mt-1">Increment/Decrement Vote Counts</p>
               </div>
             </div>
-            <button
-              onClick={fetchCandidates}
-              className="flex items-center space-x-2 bg-red-700 hover:bg-red-800 px-4 py-2 rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              <span>Refresh</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={fetchCandidates}
+                className="flex items-center space-x-2 bg-red-700 hover:bg-red-800 px-4 py-2 rounded-lg transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Refresh</span>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors text-white"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -317,8 +437,20 @@ export default function AdminPage() {
             <h2 className="text-2xl font-bold">Vote Management</h2>
             <p className="text-blue-100">Adjust vote counts for existing candidates</p>
           </div>
-          <div className="p-6 space-y-6">
-            {candidates.map(candidate => (
+          <div className="p-6 space-y-8">
+            {adminPositions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No candidates found. Add some candidates to get started!</p>
+              </div>
+            ) : (
+              adminPositions.map(position => (
+                <div key={position} className="space-y-4">
+                  <div className="border-b border-gray-200 pb-2">
+                    <h3 className="text-xl font-bold text-gray-900">{position}</h3>
+                    <p className="text-gray-600">{groupedCandidates[position].length} candidate{groupedCandidates[position].length !== 1 ? 's' : ''}</p>
+                  </div>
+                  <div className="space-y-4">
+                    {groupedCandidates[position].map(candidate => (
               <div key={candidate.id} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
@@ -326,7 +458,7 @@ export default function AdminPage() {
                       <div>
                         <h3 className="font-bold text-lg text-gray-900">{candidate.name}</h3>
                         {candidate.party && (
-                          <p className="text-sm text-gray-600">Running for: {candidate.party}</p>
+                          <p className="text-sm text-gray-600">Position: {candidate.party}</p>
                         )}
                         {candidate.description && (
                           <p className="text-sm text-gray-700 mt-1">{candidate.description}</p>
@@ -411,6 +543,10 @@ export default function AdminPage() {
                 </div>
               </div>
             ))}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -452,15 +588,21 @@ export default function AdminPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Position/Office
+                    Position <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Mayor, Governor, Senator (optional)"
+                  <select
                     value={newCandidate.party}
                     onChange={(e) => setNewCandidate(prev => ({ ...prev, party: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                  />
+                    required
+                  >
+                    <option value="">Select a position</option>
+                    {positions.map(position => (
+                      <option key={position} value={position}>
+                        {position}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
@@ -479,7 +621,7 @@ export default function AdminPage() {
                 <div className="flex space-x-3 pt-2">
                   <button
                     onClick={addCandidate}
-                    disabled={addingCandidate || !newCandidate.name.trim()}
+                    disabled={addingCandidate || !newCandidate.name.trim() || !newCandidate.party}
                     className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
                   >
                     {addingCandidate ? (
@@ -509,30 +651,39 @@ export default function AdminPage() {
             {candidates.length === 0 ? (
               <p className="text-gray-500 text-center py-8">No candidates found. Add some candidates to get started!</p>
             ) : (
-              <div className="space-y-3">
-                {candidates.map(candidate => (
-                  <div key={candidate.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{candidate.name}</h4>
-                        {candidate.party && (
-                          <p className="text-sm text-gray-600">Running for: {candidate.party}</p>
-                        )}
-                        <p className="text-sm text-blue-600">{candidate.votes.toLocaleString()} votes</p>
-                      </div>
+              <div className="space-y-6">
+                {adminPositions.map(position => (
+                  <div key={position}>
+                    <h4 className="font-semibold text-gray-800 text-lg mb-3 border-b border-gray-200 pb-2">
+                      {position} ({groupedCandidates[position].length})
+                    </h4>
+                    <div className="space-y-3">
+                      {groupedCandidates[position].map(candidate => (
+                        <div key={candidate.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                          <div className="flex items-center space-x-3">
+                            <div>
+                              <h5 className="font-medium text-gray-900">{candidate.name}</h5>
+                              <p className="text-sm text-blue-600">{candidate.votes.toLocaleString()} votes</p>
+                              {candidate.description && (
+                                <p className="text-sm text-gray-500">{candidate.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeCandidate(candidate.id, candidate.name)}
+                            disabled={removingCandidate === candidate.id}
+                            className="flex items-center space-x-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
+                          >
+                            {removingCandidate === candidate.id ? (
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3 h-3" />
+                            )}
+                            <span>Remove</span>
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                    <button
-                      onClick={() => removeCandidate(candidate.id, candidate.name)}
-                      disabled={removingCandidate === candidate.id}
-                      className="flex items-center space-x-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
-                    >
-                      {removingCandidate === candidate.id ? (
-                        <RefreshCw className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-3 h-3" />
-                      )}
-                      <span>Remove</span>
-                    </button>
                   </div>
                 ))}
               </div>
@@ -560,8 +711,8 @@ export default function AdminPage() {
               <h4 className="font-semibold text-blue-700 mb-2">Candidate Management</h4>
               <ul className="text-blue-700 space-y-1 text-sm">
                 <li><strong>Add Candidate:</strong> Click &quot;Add Candidate&quot; button to open the form</li>
-                <li><strong>Required Fields:</strong> Only candidate name is required</li>
-                <li><strong>Position/Office:</strong> Optional field for what office they&apos;re running for (e.g., Mayor, Governor)</li>
+                <li><strong>Required Fields:</strong> Both candidate name and position are required</li>
+                <li><strong>Position:</strong> Select from Board of Director (BOD), Audit Committee, or Election Committee</li>
                 <li><strong>Description:</strong> Optional short description of the candidate</li>
                 <li><strong>Remove Candidate:</strong> Click the red &quot;Remove&quot; button next to any candidate (requires confirmation)</li>
                 <li><strong>View All:</strong> See all current candidates with their vote counts at the bottom</li>
@@ -573,7 +724,7 @@ export default function AdminPage() {
               <ul className="text-blue-700 space-y-1 text-sm">
                 <li><strong>Live Sync:</strong> All changes are applied immediately and updated across all devices</li>
                 <li><strong>Main Page:</strong> Results automatically refresh to show the latest vote counts</li>
-                <li><strong>Admin Panel:</strong> Real-time updates ensure you&apos;re always working with current data</li>
+                <li><strong>Admin Panel:</strong> Real-time updates ensure you're always working with current data</li>
               </ul>
             </div>
           </div>
