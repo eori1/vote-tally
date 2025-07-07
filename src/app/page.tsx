@@ -146,7 +146,6 @@ export default function Home() {
           <VoteSection
             title="Candidates"
             candidates={candidates}
-            position="candidate"
           />
         </div>
       </main>

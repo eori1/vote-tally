@@ -7,10 +7,9 @@ import { Users } from 'lucide-react'
 interface VoteSectionProps {
   title: string
   candidates: Candidate[]
-  position: 'candidate'
 }
 
-export default function VoteSection({ title, candidates, position }: VoteSectionProps) {
+export default function VoteSection({ title, candidates }: VoteSectionProps) {
   const sortedCandidates = [...candidates].sort((a, b) => b.votes - a.votes)
   const totalVotes = candidates.reduce((sum, candidate) => sum + candidate.votes, 0)
   
