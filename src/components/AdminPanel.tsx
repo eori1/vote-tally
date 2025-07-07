@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Candidate } from '@/types'
 import { supabase } from '@/lib/supabase'
-import { Settings, Plus, Save } from 'lucide-react'
+import { Settings, Save } from 'lucide-react'
 
 interface AdminPanelProps {
   candidates: Candidate[]
@@ -54,8 +54,7 @@ export default function AdminPanel({ candidates, onUpdate }: AdminPanelProps) {
     }
   }
 
-  const senators = candidates.filter(c => c.position === 'senator')
-  const partyList = candidates.filter(c => c.position === 'party-list')
+  const allCandidates = candidates
 
   return (
     <>
@@ -84,12 +83,12 @@ export default function AdminPanel({ candidates, onUpdate }: AdminPanelProps) {
             </div>
 
             <div className="p-6">
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Senators */}
+              <div className="max-w-2xl mx-auto">
+                {/* All Candidates */}
                 <div>
-                  <h3 className="text-xl font-bold mb-4 text-blue-700">Senators</h3>
+                  <h3 className="text-xl font-bold mb-4 text-blue-700">All Candidates</h3>
                   <div className="space-y-4">
-                    {senators.map(candidate => (
+                    {allCandidates.map(candidate => (
                       <div key={candidate.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="font-semibold text-gray-900">{candidate.name}</div>
                         {candidate.party && (
@@ -105,30 +104,6 @@ export default function AdminPanel({ candidates, onUpdate }: AdminPanelProps) {
                             value={voteUpdates[candidate.id] ?? candidate.votes}
                             onChange={(e) => handleVoteChange(candidate.id, parseInt(e.target.value) || 0)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Party List */}
-                <div>
-                  <h3 className="text-xl font-bold mb-4 text-orange-600">Party-List</h3>
-                  <div className="space-y-4">
-                    {partyList.map(candidate => (
-                      <div key={candidate.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="font-semibold text-gray-900">{candidate.name}</div>
-                        <div className="mt-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Votes
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={voteUpdates[candidate.id] ?? candidate.votes}
-                            onChange={(e) => handleVoteChange(candidate.id, parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                           />
                         </div>
                       </div>

@@ -2,7 +2,7 @@
 
 import { Candidate } from '@/types'
 import VoteCard from './VoteCard'
-import { Flag, Users } from 'lucide-react'
+import { Users } from 'lucide-react'
 
 interface VoteSectionProps {
   title: string
@@ -14,20 +14,20 @@ export default function VoteSection({ title, candidates, position }: VoteSection
   const sortedCandidates = [...candidates].sort((a, b) => b.votes - a.votes)
   const totalVotes = candidates.reduce((sum, candidate) => sum + candidate.votes, 0)
   
-  const getSectionColor = (position: string) => {
+  const getSectionColor = () => {
     return 'bg-blue-700' // Single color for all candidates
   }
 
-  const getSectionIcon = (position: string) => {
+  const getSectionIcon = () => {
     return <Users className="w-8 h-8 text-white" />
   }
 
   return (
     <div className="w-full">
       {/* Header */}
-      <div className={`${getSectionColor(position)} text-white p-6 rounded-t-lg`}>
+      <div className={`${getSectionColor()} text-white p-6 rounded-t-lg`}>
         <div className="flex items-center space-x-4">
-          {getSectionIcon(position)}
+          {getSectionIcon()}
           <div>
             <h2 className="text-3xl font-bold">{title}</h2>
             <p className="text-lg opacity-90">PHILIPPINES</p>

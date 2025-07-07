@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Candidate } from '@/types'
 import { supabase } from '@/lib/supabase'
-import { Plus, Minus, Save, RefreshCw, ArrowLeft, UserPlus, Trash2, X } from 'lucide-react'
+import { Plus, Minus, RefreshCw, ArrowLeft, UserPlus, Trash2, X } from 'lucide-react'
 import Link from 'next/link'
 
 export default function AdminPage() {
@@ -194,7 +194,7 @@ export default function AdminPage() {
       console.log('Attempting to add candidate with basic data:', insertData)
 
       // First try without description
-      let { data, error } = await supabase
+      const { data, error } = await supabase
         .from('candidates')
         .insert(insertData)
 
@@ -550,8 +550,8 @@ export default function AdminPage() {
               <ul className="text-blue-700 space-y-1 text-sm">
                 <li><strong>Quick Actions:</strong> Use the red (-1) and green (+1) buttons for single vote adjustments</li>
                 <li><strong>Custom Amounts:</strong> Enter any positive number in the input field</li>
-                <li><strong>Add Votes:</strong> Click the green "Add Votes" button to increase by the entered amount</li>
-                <li><strong>Subtract Votes:</strong> Click the red "Subtract Votes" button to decrease by the entered amount</li>
+                <li><strong>Add Votes:</strong> Click the green &quot;Add Votes&quot; button to increase by the entered amount</li>
+                <li><strong>Subtract Votes:</strong> Click the red &quot;Subtract Votes&quot; button to decrease by the entered amount</li>
                 <li><strong>Keyboard Shortcut:</strong> Press Enter after typing a number to quickly add those votes</li>
               </ul>
             </div>
@@ -559,11 +559,11 @@ export default function AdminPage() {
             <div>
               <h4 className="font-semibold text-blue-700 mb-2">Candidate Management</h4>
               <ul className="text-blue-700 space-y-1 text-sm">
-                <li><strong>Add Candidate:</strong> Click "Add Candidate" button to open the form</li>
+                <li><strong>Add Candidate:</strong> Click &quot;Add Candidate&quot; button to open the form</li>
                 <li><strong>Required Fields:</strong> Only candidate name is required</li>
-                <li><strong>Position/Office:</strong> Optional field for what office they're running for (e.g., Mayor, Governor)</li>
+                <li><strong>Position/Office:</strong> Optional field for what office they&apos;re running for (e.g., Mayor, Governor)</li>
                 <li><strong>Description:</strong> Optional short description of the candidate</li>
-                <li><strong>Remove Candidate:</strong> Click the red "Remove" button next to any candidate (requires confirmation)</li>
+                <li><strong>Remove Candidate:</strong> Click the red &quot;Remove&quot; button next to any candidate (requires confirmation)</li>
                 <li><strong>View All:</strong> See all current candidates with their vote counts at the bottom</li>
               </ul>
             </div>
