@@ -249,7 +249,7 @@ export default function AdminPage() {
   }
 
   const removeCandidate = async (candidateId: number, candidateName: string) => {
-    if (!confirm(`Are you sure you want to remove "${candidateName}"? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to remove ${candidateName}? This action cannot be undone.`)) {
       return
     }
 
