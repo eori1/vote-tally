@@ -724,7 +724,7 @@ export default function AdminPage() {
               <ul className="text-blue-700 space-y-1 text-sm">
                 <li><strong>Live Sync:</strong> All changes are applied immediately and updated across all devices</li>
                 <li><strong>Main Page:</strong> Results automatically refresh to show the latest vote counts</li>
-                <li><strong>Admin Panel:</strong> Real-time updates ensure you're always working with current data</li>
+                <li><strong>Admin Panel:</strong> Real-time updates ensure you&apos;re always working with current data</li>
               </ul>
             </div>
           </div>
