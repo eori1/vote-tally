@@ -181,7 +181,7 @@ export default function AdminPage() {
       }
 
       // First try without description
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('candidates')
         .insert(insertData)
 

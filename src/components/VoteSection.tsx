@@ -46,7 +46,7 @@ export default function VoteSection({ title, candidates, showAll = false }: Vote
       {/* Vote Cards */}
       <div className="bg-gray-50 p-3 rounded-b-lg">
         <div className="grid gap-3">
-          {displayedCandidates.map((candidate, index) => (
+          {displayedCandidates.map((candidate) => (
             <VoteCard 
               key={candidate.id}
               candidate={candidate}
