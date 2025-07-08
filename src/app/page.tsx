@@ -12,6 +12,7 @@ export default function Home() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
   const [nextRefreshIn, setNextRefreshIn] = useState(30)
+  const [showAllCandidates, setShowAllCandidates] = useState(false)
 
   const fetchCandidates = async (isAutoRefresh: boolean = false) => {
     try {
@@ -62,7 +63,6 @@ export default function Home() {
   useEffect(() => {
     // Set up automatic refresh every 30 seconds
     const autoRefreshInterval = setInterval(() => {
-      console.log('Auto-refreshing...')
       fetchCandidates(true) // Mark as auto-refresh
       setNextRefreshIn(30) // Reset countdown
     }, 30000) // 30 seconds
@@ -71,7 +71,6 @@ export default function Home() {
     const countdownInterval = setInterval(() => {
       setNextRefreshIn(prev => {
         const newValue = prev <= 1 ? 30 : prev - 1
-        console.log('Countdown:', newValue)
         return newValue
       })
     }, 1000) // 1 second
@@ -108,23 +107,23 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-[1600px] mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">30th HICEMPO General Assembly</h1>
+              <h1 className="text-2xl font-bold text-gray-900">30th HICEMPO General Assembly</h1>
               <p className="text-gray-600 mt-1">Real-time Vote Tallying System</p>
             </div>
             <div className="text-right">
-              <div className="flex items-center space-x-4">
-                              <button
+              <div className="flex items-center space-x-3">
+                <button
                 onClick={() => {
                   fetchCandidates(false)
                   setNextRefreshIn(30) // Reset countdown on manual refresh
                 }}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center space-x-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>Refresh</span>
@@ -138,7 +137,7 @@ export default function Home() {
                 )}
               </div>
               
-              <div className="mt-1 space-y-1">
+              <div className="mt-1 space-y-0.5">
                 <p className="text-sm text-gray-500">
                   Last updated: {lastUpdated.toLocaleTimeString()}
                 </p>
@@ -152,43 +151,78 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <main className="flex-1 max-w-[1600px] mx-auto px-4 py-6 w-full">
+        <div className="space-y-6">
           {/* Summary Section */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Election Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg shadow-lg p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-xl font-bold text-gray-900">Election Overview</h2>
+              <button
+                onClick={() => setShowAllCandidates(!showAllCandidates)}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              >
+                <span>{showAllCandidates ? 'Show Top 4' : 'Show All Candidates'}</span>
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {positions.map(position => {
                 const positionCandidates = groupedCandidates[position]
                 const totalVotes = positionCandidates.reduce((sum, candidate) => sum + candidate.votes, 0)
                 return (
-                  <div key={position} className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="font-semibold text-lg text-gray-800">{position}</h3>
-                    <p className="text-gray-600">{positionCandidates.length} candidates</p>
-                    <p className="text-blue-600 font-medium">{totalVotes.toLocaleString()} total votes</p>
+                  <div key={position} className="bg-gray-50 rounded-lg p-3">
+                    <h3 className="font-semibold text-base text-gray-800">{position}</h3>
+                    <p className="text-sm text-gray-600">{positionCandidates.length} candidates</p>
+                    <p className="text-blue-600 font-medium text-lg">{totalVotes.toLocaleString()} total votes</p>
                   </div>
                 )
               })}
             </div>
           </div>
 
-          {/* Position Results */}
-          {positions.map(position => (
-            <VoteSection
-              key={position}
-              title={position}
-              candidates={groupedCandidates[position]}
-            />
-          ))}
+          {/* Position Results - Three Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pb-6">
+            {/* Board of Directors (BOD) - Left Column */}
+            {groupedCandidates['Board of Director (BOD)'] && (
+              <div className="order-1">
+                <VoteSection
+                  title="Board of Director (BOD)"
+                  candidates={groupedCandidates['Board of Director (BOD)']}
+                  showAll={showAllCandidates}
+                />
+              </div>
+            )}
+
+            {/* Audit Committee - Middle Column */}
+            {groupedCandidates['Audit Committee'] && (
+              <div className="order-2">
+                <VoteSection
+                  title="Audit Committee"
+                  candidates={groupedCandidates['Audit Committee']}
+                  showAll={showAllCandidates}
+                />
+              </div>
+            )}
+
+            {/* Election Committee - Right Column */}
+            {groupedCandidates['Election Committee'] && (
+              <div className="order-3">
+                <VoteSection
+                  title="Election Committee"
+                  candidates={groupedCandidates['Election Committee']}
+                  showAll={showAllCandidates}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <footer className="bg-white border-t border-gray-200 mt-auto">
+        <div className="max-w-[1600px] mx-auto px-4 py-4">
           <div className="text-center text-gray-600">
-            <p>Vote Tallying System</p>
-            <p className="text-sm mt-1">
+            <p className="text-sm font-medium">Vote Tallying System</p>
+            <p className="text-xs mt-1">
               Manual vote entry system for election results tracking
             </p>
           </div>

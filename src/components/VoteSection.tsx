@@ -7,10 +7,12 @@ import { Users } from 'lucide-react'
 interface VoteSectionProps {
   title: string
   candidates: Candidate[]
+  showAll?: boolean
 }
 
-export default function VoteSection({ title, candidates }: VoteSectionProps) {
+export default function VoteSection({ title, candidates, showAll = false }: VoteSectionProps) {
   const sortedCandidates = [...candidates].sort((a, b) => b.votes - a.votes)
+  const displayedCandidates = showAll ? sortedCandidates : sortedCandidates.slice(0, 4)
   const totalVotes = candidates.reduce((sum, candidate) => sum + candidate.votes, 0)
   
   const getSectionColor = (title: string) => {
@@ -24,34 +26,41 @@ export default function VoteSection({ title, candidates }: VoteSectionProps) {
   }
 
   const getSectionIcon = () => {
-    return <Users className="w-8 h-8 text-white" />
+    return <Users className="w-6 h-6 text-white" />
   }
 
   return (
     <div className="w-full">
       {/* Header */}
-      <div className={`${getSectionColor(title)} text-white p-6 rounded-t-lg`}>
-        <div className="flex items-center space-x-4">
+      <div className={`${getSectionColor(title)} text-white p-3 rounded-t-lg`}>
+        <div className="flex items-center space-x-2">
           {getSectionIcon()}
-          <div>
-            <h2 className="text-3xl font-bold">{title}</h2>
-            <p className="text-lg opacity-90">ORGANIZATIONAL ELECTION</p>
-            <p className="text-sm opacity-75 mt-1">{candidates.length} candidate{candidates.length !== 1 ? 's' : ''} running</p>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg font-bold leading-tight">{title}</h2>
+            <p className="text-sm opacity-90">ORGANIZATIONAL ELECTION</p>
+            <p className="text-xs opacity-75 mt-0.5">{candidates.length} candidate{candidates.length !== 1 ? 's' : ''} running</p>
           </div>
         </div>
       </div>
 
       {/* Vote Cards */}
-      <div className="bg-gray-50 p-6 rounded-b-lg">
-        <div className="grid gap-6">
-          {sortedCandidates.map((candidate, index) => (
+      <div className="bg-gray-50 p-3 rounded-b-lg">
+        <div className="grid gap-3">
+          {displayedCandidates.map((candidate, index) => (
             <VoteCard 
               key={candidate.id}
               candidate={candidate}
-              rank={index + 1}
+              rank={sortedCandidates.findIndex(c => c.id === candidate.id) + 1}
               totalVotes={totalVotes}
             />
           ))}
+          {!showAll && sortedCandidates.length > 4 && (
+            <div className="text-center py-2">
+              <p className="text-sm text-gray-500">
+                {sortedCandidates.length - 4} more candidate{sortedCandidates.length - 4 !== 1 ? 's' : ''} not shown
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

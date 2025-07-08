@@ -58,7 +58,6 @@ export default function AdminPage() {
         schema: 'public', 
         table: 'candidates' 
       }, (payload) => {
-        console.log('Real-time update received:', payload)
         // Update the specific candidate in state immediately
         setCandidates(prev => prev.map(candidate => 
           candidate.id === payload.new.id 
@@ -71,7 +70,6 @@ export default function AdminPage() {
         schema: 'public', 
         table: 'candidates' 
       }, (payload) => {
-        console.log('Real-time insert received:', payload)
         // Add the new candidate to state
         setCandidates(prev => [...prev, payload.new as Candidate])
       })
@@ -80,7 +78,6 @@ export default function AdminPage() {
         schema: 'public', 
         table: 'candidates' 
       }, (payload) => {
-        console.log('Real-time delete received:', payload)
         // Remove the candidate from state
         setCandidates(prev => prev.filter(candidate => candidate.id !== payload.old.id))
       })
@@ -96,7 +93,6 @@ export default function AdminPage() {
     const now = Date.now()
     const lastUpdate = lastUpdateTime[candidateId] || 0
     if (now - lastUpdate < 500) { // 500ms delay between updates
-      console.log('Update too rapid, ignoring...')
       return
     }
     setLastUpdateTime(prev => ({ ...prev, [candidateId]: now }))
@@ -129,23 +125,6 @@ export default function AdminPage() {
         console.error('Error updating votes:', updateError)
         alert('Error updating votes: ' + (updateError.message || 'Unknown error'))
         return
-      }
-
-      // Log the change
-      const changeType = change === 1 ? 'increment' : change === -1 ? 'decrement' : 'custom'
-      const { error: logError } = await supabase
-        .from('vote_changes')
-        .insert({
-          candidate_id: candidateId,
-          previous_votes: previousVotes,
-          new_votes: newVotes,
-          change_amount: change,
-          change_type: changeType
-        })
-
-      if (logError) {
-        console.error('Error logging change:', logError)
-        // Don't alert for logging errors, just console log
       }
 
       // Immediately refresh the candidates list
@@ -201,8 +180,6 @@ export default function AdminPage() {
         votes: 0
       }
 
-      console.log('Attempting to add candidate with basic data:', insertData)
-
       // First try without description
       const { data, error } = await supabase
         .from('candidates')
@@ -210,18 +187,12 @@ export default function AdminPage() {
 
       if (error) {
         console.error('Basic insert failed:', error)
-        console.error('Error code:', error.code)
-        console.error('Error message:', error.message)
-        console.error('Error details:', error.details)
         alert('Error adding candidate: ' + error.message + (error.details ? ' - ' + error.details : ''))
         return
       }
 
-      console.log('Basic candidate added successfully:', data)
-
       // If we have a description, try to update with it
       if (newCandidate.description.trim()) {
-        console.log('Attempting to add description...')
         const { error: updateError } = await supabase
           .from('candidates')
           .update({ description: newCandidate.description.trim() })
@@ -230,8 +201,6 @@ export default function AdminPage() {
         if (updateError) {
           console.error('Description update failed (but candidate was added):', updateError)
           alert('Candidate added successfully, but description could not be saved: ' + updateError.message)
-        } else {
-          console.log('Description added successfully')
         }
       }
 
@@ -241,8 +210,8 @@ export default function AdminPage() {
       await fetchCandidates()
       alert('Candidate added successfully!')
     } catch (error) {
-      console.error('Catch block error:', error)
-      alert('Error adding candidate: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+      console.error('Error adding candidate:', error)
+      alert('Error adding candidate: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setAddingCandidate(false)
     }
